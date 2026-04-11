@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPL Events Finder</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #003366;
+    --teal:    #006666;
+    --teal-lt: #008080;
+    --cream:   #fffff0;
+    --white:   #ffffff;
+    --silver:  #c0c0c0;
+    --grey:    #808080;
+    --dgrey:   #404040;
+    --black:   #000000;
+    --red:     #cc0000;
+
+    /* Classic bevelled border colours */
+    --bev-light: #ffffff;
+    --bev-dark:  #808080;
+
+    --font-body: "Courier New", Courier, monospace;
+    --font-ui:   Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--black);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  a { color: var(--navy); }
+  a:visited { color: var(--teal); }
+
+  /* ── Retro Helpers ────────────────────────────────────────────── */
+  .inset {
+    border-top:    2px solid var(--bev-dark);
+    border-left:   2px solid var(--bev-dark);
+    border-bottom: 2px solid var(--bev-light);
+    border-right:  2px solid var(--bev-light);
+  }
+
+  .raised {
+    border-top:    2px solid var(--bev-light);
+    border-left:   2px solid var(--bev-light);
+    border-bottom: 2px solid var(--bev-dark);
+    border-right:  2px solid var(--bev-dark);
+  }
+
+  hr.classic {
+    border: none;
+    border-top: 2px solid var(--bev-dark);
+    border-bottom: 1px solid var(--bev-light);
+    margin: 8px 0;
+  }
+
+  /* ── Header ───────────────────────────────────────────────────── */
+  #header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 16px 8px;
+  }
+
+  #header h1 {
+    font-family: var(--font-ui);
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  #header .subtitle {
+    font-size: 12px;
+    color: var(--silver);
+    margin-top: 2px;
+  }
+
+  #meta-bar {
+    background: var(--teal);
+    color: var(--white);
+    font-size: 11px;
+    padding: 3px 16px;
+    font-family: var(--font-body);
+  }
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  #main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 16px;
+  }
+
+  /* ── Filter Panel ─────────────────────────────────────────────── */
+  #filter-panel {
+    background: var(--silver);
+    padding: 10px 12px 12px;
+    margin-bottom: 12px;
+  }
+
+  #filter-panel h2 {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: var(--navy);
+  }
+
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px 16px;
+    align-items: start;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .filter-group label {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--dgrey);
+    letter-spacing: 0.5px;
+  }
+
+  .filter-group input[type="date"],
+  .filter-group select {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    padding: 3px 5px;
+    width: 100%;
+    border-top:    2px solid var(--bev-dark);
+    border-left:   2px solid var(--bev-dark);
+    border-bottom: 2px solid var(--bev-light);
+    border-right:  2px solid var(--bev-light);
+  }
+
+  /* ── Multi-select checkboxes ──────────────────────────────────── */
+  .checkbox-list {
+    background: var(--white);
+    padding: 4px 6px;
+    max-height: 110px;
+    overflow-y: auto;
+    border-top:    2px solid var(--bev-dark);
+    border-left:   2px solid var(--bev-dark);
+    border-bottom: 2px solid var(--bev-light);
+    border-right:  2px solid var(--bev-light);
+  }
+
+  .checkbox-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: normal;
+    text-transform: none;
+    color: var(--black);
+    cursor: pointer;
+    padding: 2px 0;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+
+  .checkbox-list label:hover {
+    background: #d0d8e8;
+  }
+
+  .checkbox-list input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--navy);
+  }
+
+  /* ── Filter Actions ───────────────────────────────────────────── */
+  #filter-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 14px;
+    cursor: pointer;
+    background: var(--silver);
+    color: var(--black);
+    border-top:    2px solid var(--bev-light);
+    border-left:   2px solid var(--bev-light);
+    border-bottom: 2px solid var(--bev-dark);
+    border-right:  2px solid var(--bev-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:active {
+    border-top:    2px solid var(--bev-dark);
+    border-left:   2px solid var(--bev-dark);
+    border-bottom: 2px solid var(--bev-light);
+    border-right:  2px solid var(--bev-light);
+  }
+
+  .btn:focus-visible {
+    outline: 2px dotted var(--navy);
+    outline-offset: 2px;
+  }
+
+  #result-count {
+    font-size: 12px;
+    color: var(--dgrey);
+    font-family: var(--font-body);
+  }
+
+  /* ── Table ────────────────────────────────────────────────────── */
+  #table-wrapper {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--white);
+  }
+
+  thead tr {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  thead th {
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-right: 1px solid var(--teal-lt);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  thead th:last-child { border-right: none; }
+
+  thead th:hover { background: var(--teal); }
+
+  thead th .sort-arrow {
+    margin-left: 4px;
+    font-size: 10px;
+    opacity: 0.6;
+  }
+
+  thead th.sorted .sort-arrow { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid #d0d0d0;
+  }
+
+  tbody tr:nth-child(even) { background: #e8e8f0; }
+  tbody tr:hover { background: #ccd8ee; }
+
+  tbody td {
+    padding: 5px 8px;
+    vertical-align: top;
+    border-right: 1px solid #d0d0d0;
+  }
+
+  tbody td:last-child { border-right: none; }
+
+  .tag {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 10px;
+    padding: 1px 5px;
+    margin: 1px 2px 1px 0;
+  }
+
+  .tag.audience {
+    background: var(--teal);
+  }
+
+  /* ── Pagination ───────────────────────────────────────────────── */
+  #pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  #pagination .btn {
+    padding: 3px 10px;
+    font-size: 12px;
+  }
+
+  #pagination .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  #page-info {
+    font-size: 12px;
+    font-family: var(--font-body);
+    color: var(--dgrey);
+  }
+
+  /* ── Empty / Loading states ───────────────────────────────────── */
+  #status-msg {
+    padding: 20px;
+    text-align: center;
+    font-family: var(--font-body);
+    color: var(--dgrey);
+    font-size: 13px;
+  }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  #footer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--grey);
+    text-align: center;
+    padding: 8px 0 16px;
+    font-family: var(--font-body);
+    border-top: 1px solid var(--silver);
+  }
+
+  /* ── Accessibility: skip link ─────────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--navy);
+    color: var(--white);
+    padding: 4px 8px;
+    font-size: 13px;
+    z-index: 100;
+  }
+  .skip-link:focus { left: 0; }
+
+  @media (max-width: 640px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    thead th:nth-child(n+6) { display: none; }
+    tbody td:nth-child(n+6) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#results" class="skip-link">Skip to results</a>
+
+<div id="header">
+  <h1>&#x1F4DA; TPL Events Finder</h1>
+  <div class="subtitle">Toronto Public Library &mdash; Branch Programs &amp; Events</div>
+</div>
+<div id="meta-bar" aria-live="polite">Loading data&hellip;</div>
+
+<div id="main">
+
+  <div id="filter-panel" class="raised" role="search" aria-label="Event filters">
+    <h2>Filter Events</h2>
+    <div class="filter-grid">
+
+      <div class="filter-group">
+        <label for="date-from">Date from</label>
+        <input type="date" id="date-from" aria-label="Date from">
+      </div>
+
+      <div class="filter-group">
+        <label for="date-to">Date to</label>
+        <input type="date" id="date-to" aria-label="Date to">
+      </div>
+
+      <div class="filter-group">
+        <label for="time-from">Start time from</label>
+        <select id="time-from" aria-label="Start time from">
+          <option value="">Any</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="time-to">Start time to</label>
+        <select id="time-to" aria-label="Start time to">
+          <option value="">Any</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="library-select">Library</label>
+        <select id="library-select" aria-label="Library">
+          <option value="">All libraries</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Audience</label>
+        <div class="checkbox-list" id="audience-list" role="group" aria-label="Audience filters"></div>
+      </div>
+
+      <div class="filter-group">
+        <label>Event type</label>
+        <div class="checkbox-list" id="eventtype-list" role="group" aria-label="Event type filters"></div>
+      </div>
+
+    </div>
+
+    <div id="filter-actions">
+      <button class="btn" id="clear-btn" type="button">Clear All Filters</button>
+      <span id="result-count" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <hr class="classic">
+
+  <div id="table-wrapper">
+    <div id="status-msg">Loading events&hellip;</div>
+    <table id="events-table" style="display:none" aria-label="Library events">
+      <thead>
+        <tr>
+          <th data-col="title"    tabindex="0">Title <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+          <th data-col="date"     tabindex="0" class="sorted">Date <span class="sort-arrow">&#x25B2;</span></th>
+          <th data-col="startTime" tabindex="0">Start <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+          <th data-col="endTime"  tabindex="0">End <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+          <th data-col="location" tabindex="0">Library <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+          <th>Audience</th>
+          <th>Event Type</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <div id="pagination" style="display:none" aria-label="Pagination">
+    <button class="btn" id="prev-btn" type="button" disabled>&laquo; Prev</button>
+    <span id="page-info"></span>
+    <button class="btn" id="next-btn" type="button">Next &raquo;</button>
+  </div>
+
+  <div id="footer">
+    Data sourced from <a href="https://open.toronto.ca/dataset/library-branch-programs-and-events-feed/" target="_blank" rel="noopener">Toronto Open Data</a>
+    &mdash; Toronto Public Library &mdash; Community tool, not affiliated with TPL
+  </div>
+
+</div><!-- /#main -->
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Constants ──────────────────────────────────────────────────
+  const PAGE_SIZE = 50;
+  const TIME_SLOTS = generateTimeSlots("06:00", "23:30", 30);
+
+  // ── State ──────────────────────────────────────────────────────
+  let allEvents    = [];   // full dataset as loaded
+  let filtered     = [];   // result of current filter pass
+  let currentPage  = 1;
+  let sortCol      = "date";
+  let sortDir      = 1;    // 1 = asc, -1 = desc
+
+  // ── DOM refs ───────────────────────────────────────────────────
+  const metaBar      = document.getElementById("meta-bar");
+  const statusMsg    = document.getElementById("status-msg");
+  const table        = document.getElementById("events-table");
+  const tbody        = document.getElementById("table-body");
+  const pagination   = document.getElementById("pagination");
+  const resultCount  = document.getElementById("result-count");
+  const pageInfo     = document.getElementById("page-info");
+  const prevBtn      = document.getElementById("prev-btn");
+  const nextBtn      = document.getElementById("next-btn");
+  const clearBtn     = document.getElementById("clear-btn");
+  const dateFrom     = document.getElementById("date-from");
+  const dateTo       = document.getElementById("date-to");
+  const timeFrom     = document.getElementById("time-from");
+  const timeTo       = document.getElementById("time-to");
+  const librarySelect = document.getElementById("library-select");
+  const audienceList  = document.getElementById("audience-list");
+  const eventtypeList = document.getElementById("eventtype-list");
+
+  // ── Time slot generator ────────────────────────────────────────
+  function generateTimeSlots(start, end, stepMinutes) {
+    const slots = [];
+    let [h, m] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    while (h < eh || (h === eh && m <= em)) {
+      const hh = String(h).padStart(2, "0");
+      const mm = String(m).padStart(2, "0");
+      const val = `${hh}:${mm}`;
+      const label = formatTime(val);
+      slots.push({ val, label });
+      m += stepMinutes;
+      if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
+    }
+    return slots;
+  }
+
+  function formatTime(t) {
+    if (!t) return "";
+    const [h, m] = t.split(":").map(Number);
+    const ampm = h < 12 ? "am" : "pm";
+    const h12  = h % 12 || 12;
+    return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
+  }
+
+  function formatDate(d) {
+    if (!d) return "";
+    const [y, mo, day] = d.split("-");
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return `${months[Number(mo) - 1]} ${Number(day)}, ${y}`;
+  }
+
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // ── Populate filter controls ───────────────────────────────────
+  function populateTimeSelects() {
+    TIME_SLOTS.forEach(({ val, label }) => {
+      const o1 = new Option(label, val);
+      const o2 = new Option(label, val);
+      timeFrom.appendChild(o1);
+      timeTo.appendChild(o2);
+    });
+  }
+
+  function populateLibraries(events) {
+    const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
+    locations.forEach(loc => {
+      librarySelect.appendChild(new Option(loc, loc));
+    });
+  }
+
+  function populateCheckboxList(container, values, groupName) {
+    container.innerHTML = "";
+    values.sort().forEach(val => {
+      const id  = `${groupName}-${val.replace(/\W+/g, "-")}`;
+      const lbl = document.createElement("label");
+      lbl.htmlFor = id;
+      const cb  = document.createElement("input");
+      cb.type   = "checkbox";
+      cb.id     = id;
+      cb.value  = val;
+      cb.name   = groupName;
+      cb.addEventListener("change", onFilterChange);
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(" " + val));
+      container.appendChild(lbl);
+    });
+  }
+
+  function populateFilters(events) {
+    populateLibraries(events);
+
+    const audiences  = [...new Set(events.flatMap(e => e.audiences))].filter(Boolean);
+    const eventTypes = [...new Set(events.flatMap(e => e.eventTypes))].filter(Boolean);
+    populateCheckboxList(audienceList,  audiences,  "audience");
+    populateCheckboxList(eventtypeList, eventTypes, "eventtype");
+  }
+
+  // ── Get current filter values ──────────────────────────────────
+  function getFilters() {
+    const checkedValues = (container) =>
+      [...container.querySelectorAll("input[type=checkbox]:checked")].map(cb => cb.value);
+
+    return {
+      dateFrom:   dateFrom.value,
+      dateTo:     dateTo.value,
+      timeFrom:   timeFrom.value,
+      timeTo:     timeTo.value,
+      location:   librarySelect.value,
+      audiences:  checkedValues(audienceList),
+      eventTypes: checkedValues(eventtypeList),
+    };
+  }
+
+  // ── Filter logic ───────────────────────────────────────────────
+  function applyFilters() {
+    const f = getFilters();
+
+    filtered = allEvents.filter(e => {
+      if (f.dateFrom && e.date < f.dateFrom) return false;
+      if (f.dateTo   && e.date > f.dateTo)   return false;
+      if (f.timeFrom && e.startTime < f.timeFrom) return false;
+      if (f.timeTo   && e.startTime > f.timeTo)   return false;
+      if (f.location && e.location !== f.location) return false;
+      if (f.audiences.length  && !f.audiences.some(a => e.audiences.includes(a)))   return false;
+      if (f.eventTypes.length && !f.eventTypes.some(t => e.eventTypes.includes(t))) return false;
+      return true;
+    });
+
+    // Apply current sort to filtered results
+    sortFiltered();
+
+    currentPage = 1;
+    render();
+  }
+
+  // ── Sort ───────────────────────────────────────────────────────
+  function sortFiltered() {
+    filtered.sort((a, b) => {
+      let av = a[sortCol] || "";
+      let bv = b[sortCol] || "";
+      // Secondary sort: date then startTime for stability
+      if (av === bv) {
+        av = (a.date || "") + (a.startTime || "");
+        bv = (b.date || "") + (b.startTime || "");
+      }
+      return av < bv ? -sortDir : av > bv ? sortDir : 0;
+    });
+  }
+
+  function updateSortHeaders() {
+    document.querySelectorAll("thead th[data-col]").forEach(th => {
+      const col = th.dataset.col;
+      const arrow = th.querySelector(".sort-arrow");
+      th.classList.remove("sorted");
+      if (col === sortCol) {
+        th.classList.add("sorted");
+        arrow.innerHTML = sortDir === 1 ? "&#x25B2;" : "&#x25BC;";
+      } else {
+        arrow.innerHTML = "&#x25B4;&#x25BE;";
+      }
+    });
+  }
+
+  // ── Render table ───────────────────────────────────────────────
+  function render() {
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    currentPage = Math.min(currentPage, totalPages);
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end   = Math.min(start + PAGE_SIZE, total);
+    const slice = filtered.slice(start, end);
+
+    // Result count
+    resultCount.textContent = `${total.toLocaleString()} result${total !== 1 ? "s" : ""}`;
+
+    // Table visibility
+    if (total === 0) {
+      statusMsg.textContent = "No events match your filters.";
+      statusMsg.style.display = "block";
+      table.style.display = "none";
+      pagination.style.display = "none";
+      return;
+    }
+
+    statusMsg.style.display = "none";
+    table.style.display = "table";
+
+    // Rows
+    tbody.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    slice.forEach(e => {
+      const tr = document.createElement("tr");
+
+      const tagHTML = (arr, cls) =>
+        arr.map(v => `<span class="tag ${cls}">${escHTML(v)}</span>`).join("");
+
+      tr.innerHTML = `
+        <td>${escHTML(e.title)}</td>
+        <td style="white-space:nowrap">${escHTML(formatDate(e.date))}</td>
+        <td style="white-space:nowrap">${escHTML(formatTime(e.startTime))}</td>
+        <td style="white-space:nowrap">${escHTML(formatTime(e.endTime))}</td>
+        <td>${escHTML(e.location)}</td>
+        <td>${tagHTML(e.audiences, "audience")}</td>
+        <td>${tagHTML(e.eventTypes, "")}</td>
+      `;
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+
+    // Pagination
+    if (totalPages <= 1) {
+      pagination.style.display = "none";
+    } else {
+      pagination.style.display = "flex";
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages} (showing ${start + 1}–${end} of ${total.toLocaleString()})`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    updateSortHeaders();
+  }
+
+  function escHTML(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ── Event listeners ────────────────────────────────────────────
+  function onFilterChange() {
+    applyFilters();
+  }
+
+  dateFrom.addEventListener("change", onFilterChange);
+  dateTo.addEventListener("change",   onFilterChange);
+  timeFrom.addEventListener("change", onFilterChange);
+  timeTo.addEventListener("change",   onFilterChange);
+  librarySelect.addEventListener("change", onFilterChange);
+
+  clearBtn.addEventListener("click", () => {
+    dateFrom.value = todayISO();
+    dateTo.value   = "";
+    timeFrom.value = "";
+    timeTo.value   = "";
+    librarySelect.value = "";
+    document.querySelectorAll("#audience-list input, #eventtype-list input").forEach(cb => {
+      cb.checked = false;
+    });
+    sortCol = "date";
+    sortDir = 1;
+    applyFilters();
+  });
+
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) { currentPage--; render(); scrollToTable(); }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    if (currentPage < totalPages) { currentPage++; render(); scrollToTable(); }
+  });
+
+  // Column sort on header click or Enter key
+  document.querySelectorAll("thead th[data-col]").forEach(th => {
+    const handleSort = () => {
+      const col = th.dataset.col;
+      if (sortCol === col) {
+        sortDir = -sortDir;
+      } else {
+        sortCol = col;
+        sortDir = 1;
+      }
+      sortFiltered();
+      render();
+    };
+    th.addEventListener("click", handleSort);
+    th.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") handleSort(); });
+  });
+
+  function scrollToTable() {
+    document.getElementById("table-wrapper").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ── Boot: load data ────────────────────────────────────────────
+  async function init() {
+    try {
+      // Load events and meta in parallel
+      const [eventsRes, metaRes] = await Promise.all([
+        fetch("data/events.json"),
+        fetch("data/meta.json"),
+      ]);
+
+      if (!eventsRes.ok) throw new Error(`events.json: HTTP ${eventsRes.status}`);
+      allEvents = await eventsRes.json();
+
+      if (metaRes.ok) {
+        const meta = await metaRes.json();
+        const updated = meta.lastUpdatedOn
+          ? new Date(meta.lastUpdatedOn).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })
+          : "unknown";
+        metaBar.textContent = `${meta.recordCount?.toLocaleString() ?? allEvents.length} events | data last updated: ${updated}`;
+      } else {
+        metaBar.textContent = `${allEvents.length.toLocaleString()} events loaded`;
+      }
+
+      populateTimeSelects();
+      populateFilters(allEvents);
+
+      // Set default date filter to today
+      dateFrom.value = todayISO();
+
+      applyFilters();
+
+    } catch (err) {
+      statusMsg.textContent = `Error loading events: ${err.message}. Please try refreshing.`;
+      metaBar.textContent   = "Failed to load data.";
+      console.error(err);
+    }
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>

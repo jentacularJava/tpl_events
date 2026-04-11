@@ -1,0 +1,14 @@
+[project]
+name = "tpl-events-pipeline"
+version = "0.1.0"
+description = "Fetches and processes Toronto Public Library events data"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.32",
+    "pandas>=2.2",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+]

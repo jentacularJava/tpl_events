@@ -452,9 +452,7 @@
     &mdash; Toronto Public Library &mdash; Community tool, not affiliated with TPL
   </div>
 
-</div><!-- /#main -->
-
-<script>
+</div><script>
 (function () {
   "use strict";
 
@@ -560,11 +558,8 @@
 
   function populateFilters(events) {
     populateLibraries(events);
-
     const audiences  = [...new Set(events.flatMap(e => e.audiences))].filter(Boolean);
-    const eventTypes = [...new Set(events.flatMap(e => e.eventTypes))].filter(Boolean);
     populateCheckboxList(audienceList,  audiences,  "audience");
-    populateCheckboxList(eventtypeList, eventTypes, "eventtype");
   }
 
   // ── Get current filter values ──────────────────────────────────
@@ -596,9 +591,7 @@
       return true;
     });
 
-    // Apply current sort to filtered results
     sortFiltered();
-
     currentPage = 1;
     render();
   }
@@ -608,7 +601,6 @@
     filtered.sort((a, b) => {
       let av = a[sortCol] || "";
       let bv = b[sortCol] || "";
-      // Secondary sort: date then startTime for stability
       if (av === bv) {
         av = (a.date || "") + (a.startTime || "");
         bv = (b.date || "") + (b.startTime || "");
@@ -641,10 +633,8 @@
     const end   = Math.min(start + PAGE_SIZE, total);
     const slice = filtered.slice(start, end);
 
-    // Result count
     resultCount.textContent = `${total.toLocaleString()} result${total !== 1 ? "s" : ""}`;
 
-    // Table visibility
     if (total === 0) {
       statusMsg.textContent = "No events match your filters.";
       statusMsg.style.display = "block";
@@ -656,12 +646,10 @@
     statusMsg.style.display = "none";
     table.style.display = "table";
 
-    // Rows
     tbody.innerHTML = "";
     const frag = document.createDocumentFragment();
     slice.forEach(e => {
       const tr = document.createElement("tr");
-
       const tagHTML = (arr, cls) =>
         arr.map(v => `<span class="tag ${cls}">${escHTML(v)}</span>`).join("");
 
@@ -678,7 +666,6 @@
     });
     tbody.appendChild(frag);
 
-    // Pagination
     if (totalPages <= 1) {
       pagination.style.display = "none";
     } else {
@@ -716,7 +703,7 @@
     timeFrom.value = "";
     timeTo.value   = "";
     librarySelect.value = "";
-    document.querySelectorAll("#audience-list input, #eventtype-list input").forEach(cb => {
+    document.querySelectorAll("#audience-list input").forEach(cb => {
       cb.checked = false;
     });
     sortCol = "date";
@@ -733,7 +720,6 @@
     if (currentPage < totalPages) { currentPage++; render(); scrollToTable(); }
   });
 
-  // Column sort on header click or Enter key
   document.querySelectorAll("thead th[data-col]").forEach(th => {
     const handleSort = () => {
       const col = th.dataset.col;
@@ -754,10 +740,8 @@
     document.getElementById("table-wrapper").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // ── Boot: load data ────────────────────────────────────────────
   async function init() {
     try {
-      // Load events and meta in parallel
       const [eventsRes, metaRes] = await Promise.all([
         fetch("data/events.json"),
         fetch("data/meta.json"),
@@ -778,10 +762,7 @@
 
       populateTimeSelects();
       populateFilters(allEvents);
-
-      // Set default date filter to today
       dateFrom.value = todayISO();
-
       applyFilters();
 
     } catch (err) {

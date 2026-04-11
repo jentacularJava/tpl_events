@@ -413,11 +413,6 @@
         <div class="checkbox-list" id="audience-list" role="group" aria-label="Audience filters"></div>
       </div>
 
-      <div class="filter-group">
-        <label>Event type</label>
-        <div class="checkbox-list" id="eventtype-list" role="group" aria-label="Event type filters"></div>
-      </div>
-
     </div>
 
     <div id="filter-actions">
@@ -491,7 +486,6 @@
   const timeTo       = document.getElementById("time-to");
   const librarySelect = document.getElementById("library-select");
   const audienceList  = document.getElementById("audience-list");
-  const eventtypeList = document.getElementById("eventtype-list");
 
   // ── Time slot generator ────────────────────────────────────────
   function generateTimeSlots(start, end, stepMinutes) {
@@ -585,7 +579,6 @@
       timeTo:     timeTo.value,
       location:   librarySelect.value,
       audiences:  checkedValues(audienceList),
-      eventTypes: checkedValues(eventtypeList),
     };
   }
 
@@ -600,7 +593,6 @@
       if (f.timeTo   && e.startTime > f.timeTo)   return false;
       if (f.location && e.location !== f.location) return false;
       if (f.audiences.length  && !f.audiences.some(a => e.audiences.includes(a)))   return false;
-      if (f.eventTypes.length && !f.eventTypes.some(t => e.eventTypes.includes(t))) return false;
       return true;
     });
 

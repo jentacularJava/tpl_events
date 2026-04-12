@@ -8,7 +8,7 @@
 
 ## What it does
 
-The TPL website is hard to search if you're looking for events across different library locations. This tool pulls the full event feed from Toronto Open Data, pre-processes it daily via GitHub Actions, and serves it as a fast, filterable table with no login, no tracking, and no frameworks.
+The Toronto Public Library website is hard to search if you're looking for events across different library locations. This tool pulls the full event feed from Toronto Open Data, pre-processes it daily via GitHub Actions, and serves it as a fast, filterable table with no login, no tracking, and no frameworks.
 
 **Filters:** date range, start time window, library branch 
 **Sorting:** click any column header  

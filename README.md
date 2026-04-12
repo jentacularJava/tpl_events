@@ -1,6 +1,6 @@
 # TPL Events Finder
 
-**[&#x1F517; Live site](https://jentacularjava.github.io/tpl_events/)** &nbsp;&nbsp; ![Data auto-updated daily](https://img.shields.io/badge/data-updated%20daily-006666?style=flat-square) ![Zero dependencies](https://img.shields.io/badge/dependencies-zero-003366?style=flat-square) ![License: MIT](https://img.shields.io/badge/license-MIT-silver?style=flat-square)
+## **[&#x1F517; Live site](https://jentacularjava.github.io/tpl_events/)** &nbsp;&nbsp; ![Data auto-updated daily](https://img.shields.io/badge/data-updated%20daily-006666?style=flat-square) ![Zero dependencies](https://img.shields.io/badge/dependencies-zero-003366?style=flat-square) ![License: MIT](https://img.shields.io/badge/license-MIT-silver?style=flat-square)
 
 > A community-built tool to search and filter Toronto Public Library branch programs and events by date, time, and location.
 
@@ -8,17 +8,14 @@
 
 ## What it does
 
-The Toronto Public Library website is hard to search if you're looking for events across different library locations. This tool pulls the full event feed from Toronto Open Data, pre-processes it daily via GitHub Actions, and serves it as a fast, filterable table with no login, no tracking, and no frameworks.
+The Toronto Public Library website is hard to search if you're looking for events across different library locations. This tool pulls the full event feed from Toronto Open Data, pre-processes it daily via GitHub Actions, and serves it as a fast, filterable table.
 
-**Filters:** date range, start time window, library branch 
+
+**Filters:** date range, start time window, library branch  
 **Sorting:** click any column header  
 **Data freshness:** pipeline runs daily and skips commits when upstream data has not changed
 
 ---
-
-## Live site
-
-**[https://jentacularjava.github.io/tpl_events/](https://jentacularjava.github.io/tpl_events/)**
 
 ## Screenshots
 <a href="screenshot_desktop.png">

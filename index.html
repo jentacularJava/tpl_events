@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<script
+  src="https://js.sentry-cdn.com/14d61584e26831e686baa2ff01e654e5.min.js"
+  crossorigin="anonymous"
+></script>
+
 <!-- humans.txt: /humans.txt -->
 <html lang="en">
 <head>
@@ -169,7 +174,8 @@
 
   .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    /* min(100%, 200px) ensures the track is 200px unless the screen is smaller */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
     gap: 10px 16px;
     align-items: start;
   }
@@ -196,6 +202,7 @@
     font-size: 13px;
     padding: 3px 5px;
     width: 100%;
+    min-width: 0;
     border-top:    2px solid var(--bev-dark);
     border-left:   2px solid var(--bev-dark);
     border-bottom: 2px solid var(--bev-light);
@@ -493,10 +500,11 @@
   .skip-link:focus { left: 0; }
 
   @media (max-width: 640px) {
-    .filter-grid { grid-template-columns: 1fr 1fr; }
-    thead th:nth-child(n+6) { display: none; }
-    tbody td:nth-child(n+6) { display: none; }
-    #header { flex-direction: column; gap: 8px; }
+  .filter-grid { 
+    /* Force 2 columns and override the date picker's stubborn width */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
+    gap: 10px 8px; 
+    }
   }
 </style>
 </head>
@@ -560,9 +568,7 @@
 
       <div class="filter-group">
         <label for="library-select">Library</label>
-        <select id="library-select" aria-label="Library">
-          <option value="">All libraries</option>
-        </select>
+        <div class="checkbox-list" id="library-list" role="group" aria-label="Library filters"></div>
       </div>
 
       <div class="filter-group">
@@ -611,7 +617,7 @@
     &nbsp;&middot;&nbsp;
     <a href="humans.txt">humans.txt</a>
     &nbsp;&middot;&nbsp;
-    Community tool, not affiliated with TPL
+    Not affiliated with Toronto Public Library.
   </div>
 
 </div>
@@ -722,10 +728,9 @@
   }
 
   function populateLibraries(events) {
-    const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
-    locations.forEach(loc => {
-      librarySelect.appendChild(new Option(loc, loc));
-    });
+  const libraryList = document.getElementById("library-list");
+  const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
+  populateCheckboxList(libraryList, locations, "library");
   }
 
   function populateCheckboxList(container, values, groupName) {
@@ -762,7 +767,7 @@
       dateTo:     dateTo.value,
       timeFrom:   timeFrom.value,
       timeTo:     timeTo.value,
-      location:   librarySelect.value,
+      locations:  checkedValues(document.getElementById("library-list")),
       audiences:  checkedValues(audienceList),
     };
   }
@@ -776,7 +781,7 @@
       if (f.dateTo   && e.date > f.dateTo)   return false;
       if (f.timeFrom && e.startTime < f.timeFrom) return false;
       if (f.timeTo   && e.startTime > f.timeTo)   return false;
-      if (f.location && e.location !== f.location) return false;
+      if (f.locations.length && !f.locations.includes(e.location)) return false;
       if (f.audiences.length  && !f.audiences.some(a => e.audiences.includes(a)))   return false;
       return true;
     });
@@ -885,15 +890,13 @@
   dateTo.addEventListener("change",   onFilterChange);
   timeFrom.addEventListener("change", onFilterChange);
   timeTo.addEventListener("change",   onFilterChange);
-  librarySelect.addEventListener("change", onFilterChange);
 
   clearBtn.addEventListener("click", () => {
     dateFrom.value = todayISO();
     dateTo.value   = "";
     timeFrom.value = "";
     timeTo.value   = "";
-    librarySelect.value = "";
-    document.querySelectorAll("#audience-list input").forEach(cb => {
+    document.querySelectorAll("#audience-list input, #library-list input").forEach(cb => {
       cb.checked = false;
     });
     sortCol = "date";

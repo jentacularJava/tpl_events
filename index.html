@@ -209,6 +209,12 @@
     border-right:  2px solid var(--bev-light);
   }
 
+  .filter-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  }
+
   /* ── Multi-select checkboxes ──────────────────────────────────── */
   .checkbox-list {
     background: var(--white);
@@ -530,7 +536,6 @@
           .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
           0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
       </svg>
-      View Source
     </a>
   </div>
 </div>
@@ -542,28 +547,29 @@
     <h2>Filter Events</h2>
     <div class="filter-grid">
 
-      <div class="filter-group">
-        <label for="date-from">Date from</label>
-        <input type="date" id="date-from" aria-label="Date from">
+      <div class="filter-pair">
+        <div class="filter-group">
+          <label for="date-from">Date from</label>
+          <input type="date" id="date-from" aria-label="Date from">
+        </div>
+        <div class="filter-group">
+          <label for="time-from">Start time from</label>
+          <select id="time-from" aria-label="Start time from">
+            <option value="">Any</option>
+          </select>
+        </div>
       </div>
-
-      <div class="filter-group">
-        <label for="date-to">Date to</label>
-        <input type="date" id="date-to" aria-label="Date to">
-      </div>
-
-      <div class="filter-group">
-        <label for="time-from">Start time from</label>
-        <select id="time-from" aria-label="Start time from">
-          <option value="">Any</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="time-to">Start time to</label>
-        <select id="time-to" aria-label="Start time to">
-          <option value="">Any</option>
-        </select>
+      <div class="filter-pair">
+        <div class="filter-group">
+          <label for="date-to">Date to</label>
+          <input type="date" id="date-to" aria-label="Date to">
+        </div>
+        <div class="filter-group">
+          <label for="time-to">Start time to</label>
+          <select id="time-to" aria-label="Start time to">
+            <option value="">Any</option>
+          </select>
+        </div>
       </div>
 
       <div class="filter-group">
@@ -678,7 +684,6 @@
   const dateTo       = document.getElementById("date-to");
   const timeFrom     = document.getElementById("time-from");
   const timeTo       = document.getElementById("time-to");
-  const librarySelect = document.getElementById("library-select");
   const audienceList  = document.getElementById("audience-list");
 
   // ── Time slot generator ────────────────────────────────────────

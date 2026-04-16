@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <!-- humans.txt: /humans.txt -->
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TPL Events Finder</title>
-<meta name="description" content="Search and filter Toronto Public Library branch programs and events. Community-built tool powered by Toronto Open Data.">
-<meta name="author" content="Jen — https://github.com/jentacularjava">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="TPL Events Finder">
-<meta property="og:description" content="Search and filter Toronto Public Library branch programs and events.">
-<meta property="og:url" content="https://jentacularjava.github.io/tpl_events/">
-<meta property="og:type" content="website">
-<style>
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://js.sentry-cdn.com/14d61584e26831e686baa2ff01e654e5.min.js"
+                crossorigin="anonymous"
+                defer></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TPL Events Finder</title>
+        <meta name="description"
+              content="Search and filter Toronto Public Library branch programs and events. Community-built tool powered by Toronto Open Data.">
+        <meta name="author" content="Jen — https://github.com/jentacularjava">
+        <meta name="robots" content="index, follow">
+        <meta property="og:title" content="TPL Events Finder">
+        <meta property="og:description"
+              content="Search and filter Toronto Public Library branch programs and events.">
+        <meta property="og:url"
+              content="https://jentacularjava.github.io/tpl_events/">
+        <meta property="og:type" content="website">
+        <meta http-equiv="Content-Security-Policy"
+              content=" default-src 'none'; script-src 'self' https://js.sentry-cdn.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.sentry.io; img-src 'self' data:; frame-ancestors 'none'; ">
+        <style>
   /* ── Reset & Base ─────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -169,7 +177,8 @@
 
   .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    /* min(100%, 200px) ensures the track is 200px unless the screen is smaller */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
     gap: 10px 16px;
     align-items: start;
   }
@@ -196,10 +205,17 @@
     font-size: 13px;
     padding: 3px 5px;
     width: 100%;
+    min-width: 0;
     border-top:    2px solid var(--bev-dark);
     border-left:   2px solid var(--bev-dark);
     border-bottom: 2px solid var(--bev-light);
     border-right:  2px solid var(--bev-light);
+  }
+
+  .filter-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   }
 
   /* ── Multi-select checkboxes ──────────────────────────────────── */
@@ -493,516 +509,169 @@
   .skip-link:focus { left: 0; }
 
   @media (max-width: 640px) {
-    .filter-grid { grid-template-columns: 1fr 1fr; }
-    thead th:nth-child(n+6) { display: none; }
-    tbody td:nth-child(n+6) { display: none; }
-    #header { flex-direction: column; gap: 8px; }
-  }
-</style>
-</head>
-<body>
-
-<a href="#results" class="skip-link">Skip to results</a>
-
-<div id="header">
-  <div id="header-left">
-    <h1>&#x1F4DA; TPL Events Finder</h1>
-    <div class="subtitle">Toronto Public Library &mdash; Branch Programs &amp; Events</div>
-  </div>
-  <div id="header-right">
-    <a class="gh-badge" href="https://github.com/jentacularjava/tpl_events" target="_blank" rel="noopener" aria-label="View source on GitHub">
-      <!-- GitHub mark SVG (MIT licensed, github.com/logos) -->
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
-          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
-          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
-          .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
-          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
-          .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
-          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
-          0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-      </svg>
-      View Source
-    </a>
-  </div>
-</div>
-<div id="meta-bar" aria-live="polite">Loading data&hellip;</div>
-
-<div id="main">
-
-  <div id="filter-panel" class="raised" role="search" aria-label="Event filters">
-    <h2>Filter Events</h2>
-    <div class="filter-grid">
-
-      <div class="filter-group">
-        <label for="date-from">Date from</label>
-        <input type="date" id="date-from" aria-label="Date from">
-      </div>
-
-      <div class="filter-group">
-        <label for="date-to">Date to</label>
-        <input type="date" id="date-to" aria-label="Date to">
-      </div>
-
-      <div class="filter-group">
-        <label for="time-from">Start time from</label>
-        <select id="time-from" aria-label="Start time from">
-          <option value="">Any</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="time-to">Start time to</label>
-        <select id="time-to" aria-label="Start time to">
-          <option value="">Any</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="library-select">Library</label>
-        <select id="library-select" aria-label="Library">
-          <option value="">All libraries</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Audience</label>
-        <div class="checkbox-list" id="audience-list" role="group" aria-label="Audience filters"></div>
-      </div>
-
-    </div>
-
-    <div id="filter-actions">
-      <button class="btn" id="clear-btn" type="button">Clear All Filters</button>
-      <span id="result-count" aria-live="polite"></span>
-    </div>
-  </div>
-
-  <hr class="classic">
-
-  <div id="table-wrapper">
-    <div id="status-msg">Loading events&hellip;</div>
-    <table id="events-table" style="display:none" aria-label="Library events">
-      <thead>
-        <tr>
-          <th data-col="title"    tabindex="0">Title <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
-          <th data-col="date"     tabindex="0" class="sorted">Date <span class="sort-arrow">&#x25B2;</span></th>
-          <th data-col="startTime" tabindex="0">Start <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
-          <th data-col="endTime"  tabindex="0">End <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
-          <th data-col="location" tabindex="0">Library <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
-          <th>Audience</th>
-          <th>Event Type</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
-
-  <div id="pagination" style="display:none" aria-label="Pagination">
-    <button class="btn" id="prev-btn" type="button" disabled>&laquo; Prev</button>
-    <span id="page-info"></span>
-    <button class="btn" id="next-btn" type="button">Next &raquo;</button>
-  </div>
-
-  <div id="footer">
-    Data: <a href="https://open.toronto.ca/dataset/library-branch-programs-and-events-feed/" target="_blank" rel="noopener">Toronto Open Data &mdash; TPL Branch Programs &amp; Events</a>
-    &nbsp;&middot;&nbsp;
-    <a href="https://github.com/jentacularjava/tpl_events" target="_blank" rel="noopener">Source on GitHub</a>
-    &nbsp;&middot;&nbsp;
-    <a href="humans.txt">humans.txt</a>
-    &nbsp;&middot;&nbsp;
-    Community tool, not affiliated with TPL
-  </div>
-
-</div>
-
-<!-- Easter egg modal (Konami code: up up down down left right left right b a) -->
-<div id="easter-egg-overlay" role="dialog" aria-modal="true" aria-labelledby="easter-egg-title">
-  <div id="easter-egg-box">
-    <div id="easter-egg-titlebar">
-      <div id="easter-egg-titlebar-title">
-        <span>&#x1F4DA;</span>
-        <span id="easter-egg-title">About TPL Events Finder</span>
-      </div>
-      <button id="easter-egg-close" aria-label="Close" type="button">&#x2715;</button>
-    </div>
-    <div id="easter-egg-body">
-      <p>You found it. Nice. Nerd!!!</p>
-      <p>
-        I'm so happy you're here.
-      </p>
-      <p>
-        Built by <a href="https://github.com/jentacularjava" target="_blank" rel="noopener">Jen</a>
-        in Toronto, because the TPL event search deserved better UX.
-      </p>
-      <p style="font-family: var(--font-body); font-size: 11px; color: var(--dgrey);">
-        &#x2191;&#x2191;&#x2193;&#x2193;&#x2190;&#x2192;&#x2190;&#x2192; B A
-      </p>
-    </div>
-  </div>
-</div>
-
-<script>
-(function () {
-  "use strict";
-
-  // ── Constants ──────────────────────────────────────────────────
-  const PAGE_SIZE = 50;
-  const TIME_SLOTS = generateTimeSlots("06:00", "23:30", 30);
-
-  // ── State ──────────────────────────────────────────────────────
-  let allEvents    = [];   // full dataset as loaded
-  let filtered     = [];   // result of current filter pass
-  let currentPage  = 1;
-  let sortCol      = "date";
-  let sortDir      = 1;    // 1 = asc, -1 = desc
-
-  // ── DOM refs ───────────────────────────────────────────────────
-  const metaBar      = document.getElementById("meta-bar");
-  const statusMsg    = document.getElementById("status-msg");
-  const table        = document.getElementById("events-table");
-  const tbody        = document.getElementById("table-body");
-  const pagination   = document.getElementById("pagination");
-  const resultCount  = document.getElementById("result-count");
-  const pageInfo     = document.getElementById("page-info");
-  const prevBtn      = document.getElementById("prev-btn");
-  const nextBtn      = document.getElementById("next-btn");
-  const clearBtn     = document.getElementById("clear-btn");
-  const dateFrom     = document.getElementById("date-from");
-  const dateTo       = document.getElementById("date-to");
-  const timeFrom     = document.getElementById("time-from");
-  const timeTo       = document.getElementById("time-to");
-  const librarySelect = document.getElementById("library-select");
-  const audienceList  = document.getElementById("audience-list");
-
-  // ── Time slot generator ────────────────────────────────────────
-  function generateTimeSlots(start, end, stepMinutes) {
-    const slots = [];
-    let [h, m] = start.split(":").map(Number);
-    const [eh, em] = end.split(":").map(Number);
-    while (h < eh || (h === eh && m <= em)) {
-      const hh = String(h).padStart(2, "0");
-      const mm = String(m).padStart(2, "0");
-      const val = `${hh}:${mm}`;
-      const label = formatTime(val);
-      slots.push({ val, label });
-      m += stepMinutes;
-      if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
-    }
-    return slots;
-  }
-
-  function formatTime(t) {
-    if (!t) return "";
-    const [h, m] = t.split(":").map(Number);
-    const ampm = h < 12 ? "am" : "pm";
-    const h12  = h % 12 || 12;
-    return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
-  }
-
-  function formatDate(d) {
-    if (!d) return "";
-    const [y, mo, day] = d.split("-");
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    return `${months[Number(mo) - 1]} ${Number(day)}, ${y}`;
-  }
-
-  function todayISO() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  // ── Populate filter controls ───────────────────────────────────
-  function populateTimeSelects() {
-    TIME_SLOTS.forEach(({ val, label }) => {
-      const o1 = new Option(label, val);
-      const o2 = new Option(label, val);
-      timeFrom.appendChild(o1);
-      timeTo.appendChild(o2);
-    });
-  }
-
-  function populateLibraries(events) {
-    const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
-    locations.forEach(loc => {
-      librarySelect.appendChild(new Option(loc, loc));
-    });
-  }
-
-  function populateCheckboxList(container, values, groupName) {
-    container.innerHTML = "";
-    values.sort().forEach(val => {
-      const id  = `${groupName}-${val.replace(/\W+/g, "-")}`;
-      const lbl = document.createElement("label");
-      lbl.htmlFor = id;
-      const cb  = document.createElement("input");
-      cb.type   = "checkbox";
-      cb.id     = id;
-      cb.value  = val;
-      cb.name   = groupName;
-      cb.addEventListener("change", onFilterChange);
-      lbl.appendChild(cb);
-      lbl.appendChild(document.createTextNode(" " + val));
-      container.appendChild(lbl);
-    });
-  }
-
-  function populateFilters(events) {
-    populateLibraries(events);
-    const audiences  = [...new Set(events.flatMap(e => e.audiences))].filter(Boolean);
-    populateCheckboxList(audienceList,  audiences,  "audience");
-  }
-
-  // ── Get current filter values ──────────────────────────────────
-  function getFilters() {
-    const checkedValues = (container) =>
-      [...container.querySelectorAll("input[type=checkbox]:checked")].map(cb => cb.value);
-
-    return {
-      dateFrom:   dateFrom.value,
-      dateTo:     dateTo.value,
-      timeFrom:   timeFrom.value,
-      timeTo:     timeTo.value,
-      location:   librarySelect.value,
-      audiences:  checkedValues(audienceList),
-    };
-  }
-
-  // ── Filter logic ───────────────────────────────────────────────
-  function applyFilters() {
-    const f = getFilters();
-
-    filtered = allEvents.filter(e => {
-      if (f.dateFrom && e.date < f.dateFrom) return false;
-      if (f.dateTo   && e.date > f.dateTo)   return false;
-      if (f.timeFrom && e.startTime < f.timeFrom) return false;
-      if (f.timeTo   && e.startTime > f.timeTo)   return false;
-      if (f.location && e.location !== f.location) return false;
-      if (f.audiences.length  && !f.audiences.some(a => e.audiences.includes(a)))   return false;
-      return true;
-    });
-
-    sortFiltered();
-    currentPage = 1;
-    render();
-  }
-
-  // ── Sort ───────────────────────────────────────────────────────
-  function sortFiltered() {
-    filtered.sort((a, b) => {
-      let av = a[sortCol] || "";
-      let bv = b[sortCol] || "";
-      if (av === bv) {
-        av = (a.date || "") + (a.startTime || "");
-        bv = (b.date || "") + (b.startTime || "");
-      }
-      return av < bv ? -sortDir : av > bv ? sortDir : 0;
-    });
-  }
-
-  function updateSortHeaders() {
-    document.querySelectorAll("thead th[data-col]").forEach(th => {
-      const col = th.dataset.col;
-      const arrow = th.querySelector(".sort-arrow");
-      th.classList.remove("sorted");
-      if (col === sortCol) {
-        th.classList.add("sorted");
-        arrow.innerHTML = sortDir === 1 ? "&#x25B2;" : "&#x25BC;";
-      } else {
-        arrow.innerHTML = "&#x25B4;&#x25BE;";
-      }
-    });
-  }
-
-  // ── Render table ───────────────────────────────────────────────
-  function render() {
-    const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    currentPage = Math.min(currentPage, totalPages);
-
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end   = Math.min(start + PAGE_SIZE, total);
-    const slice = filtered.slice(start, end);
-
-    resultCount.textContent = `${total.toLocaleString()} result${total !== 1 ? "s" : ""}`;
-
-    if (total === 0) {
-      statusMsg.textContent = "No events match your filters.";
-      statusMsg.style.display = "block";
-      table.style.display = "none";
-      pagination.style.display = "none";
-      return;
-    }
-
-    statusMsg.style.display = "none";
-    table.style.display = "table";
-
-    tbody.innerHTML = "";
-    const frag = document.createDocumentFragment();
-    slice.forEach(e => {
-      const tr = document.createElement("tr");
-      const tagHTML = (arr, cls) =>
-        arr.map(v => `<span class="tag ${cls}">${escHTML(v)}</span>`).join("");
-
-      tr.innerHTML = `
-        <td>${escHTML(e.title)}</td>
-        <td style="white-space:nowrap">${escHTML(formatDate(e.date))}</td>
-        <td style="white-space:nowrap">${escHTML(formatTime(e.startTime))}</td>
-        <td style="white-space:nowrap">${escHTML(formatTime(e.endTime))}</td>
-        <td>${escHTML(e.location)}</td>
-        <td>${tagHTML(e.audiences, "audience")}</td>
-        <td>${tagHTML(e.eventTypes, "")}</td>
-      `;
-      frag.appendChild(tr);
-    });
-    tbody.appendChild(frag);
-
-    if (totalPages <= 1) {
-      pagination.style.display = "none";
-    } else {
-      pagination.style.display = "flex";
-      pageInfo.textContent = `Page ${currentPage} of ${totalPages} (showing ${start + 1}–${end} of ${total.toLocaleString()})`;
-      prevBtn.disabled = currentPage === 1;
-      nextBtn.disabled = currentPage === totalPages;
-    }
-
-    updateSortHeaders();
-  }
-
-  function escHTML(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
-  // ── Event listeners ────────────────────────────────────────────
-  function onFilterChange() {
-    applyFilters();
-  }
-
-  dateFrom.addEventListener("change", onFilterChange);
-  dateTo.addEventListener("change",   onFilterChange);
-  timeFrom.addEventListener("change", onFilterChange);
-  timeTo.addEventListener("change",   onFilterChange);
-  librarySelect.addEventListener("change", onFilterChange);
-
-  clearBtn.addEventListener("click", () => {
-    dateFrom.value = todayISO();
-    dateTo.value   = "";
-    timeFrom.value = "";
-    timeTo.value   = "";
-    librarySelect.value = "";
-    document.querySelectorAll("#audience-list input").forEach(cb => {
-      cb.checked = false;
-    });
-    sortCol = "date";
-    sortDir = 1;
-    applyFilters();
-  });
-
-  prevBtn.addEventListener("click", () => {
-    if (currentPage > 1) { currentPage--; render(); scrollToTable(); }
-  });
-
-  nextBtn.addEventListener("click", () => {
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-    if (currentPage < totalPages) { currentPage++; render(); scrollToTable(); }
-  });
-
-  document.querySelectorAll("thead th[data-col]").forEach(th => {
-    const handleSort = () => {
-      const col = th.dataset.col;
-      if (sortCol === col) {
-        sortDir = -sortDir;
-      } else {
-        sortCol = col;
-        sortDir = 1;
-      }
-      sortFiltered();
-      render();
-    };
-    th.addEventListener("click", handleSort);
-    th.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") handleSort(); });
-  });
-
-  function scrollToTable() {
-    document.getElementById("table-wrapper").scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  // ── Easter egg: Konami code ────────────────────────────────────
-  // Sequence: up up down down left right left right b a
-  const KONAMI = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown",
-                  "ArrowLeft","ArrowRight","ArrowLeft","ArrowRight",
-                  "b","a"];
-  let konamiProgress = 0;
-
-  const overlay   = document.getElementById("easter-egg-overlay");
-  const closeBtn  = document.getElementById("easter-egg-close");
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === KONAMI[konamiProgress]) {
-      konamiProgress++;
-      if (konamiProgress === KONAMI.length) {
-        konamiProgress = 0;
-        overlay.classList.add("active");
-        closeBtn.focus();
-      }
-    } else {
-      konamiProgress = e.key === KONAMI[0] ? 1 : 0;
-    }
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("active");
-  });
-
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) overlay.classList.remove("active");
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && overlay.classList.contains("active")) {
-      overlay.classList.remove("active");
-    }
-  });
-
-  // ── Init ───────────────────────────────────────────────────────
-  async function init() {
-    try {
-      const [eventsRes, metaRes] = await Promise.all([
-        fetch("data/events.json"),
-        fetch("data/meta.json"),
-      ]);
-
-      if (!eventsRes.ok) throw new Error(`events.json: HTTP ${eventsRes.status}`);
-      allEvents = await eventsRes.json();
-
-      if (metaRes.ok) {
-        const meta = await metaRes.json();
-        const updated = meta.lastUpdatedOn
-          ? new Date(meta.lastUpdatedOn).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })
-          : "unknown";
-        metaBar.textContent = `${meta.recordCount?.toLocaleString() ?? allEvents.length} events | data last updated: ${updated}`;
-      } else {
-        metaBar.textContent = `${allEvents.length.toLocaleString()} events loaded`;
-      }
-
-      populateTimeSelects();
-      populateFilters(allEvents);
-      dateFrom.value = todayISO();
-      applyFilters();
-
-    } catch (err) {
-      statusMsg.textContent = `Error loading events: ${err.message}. Please try refreshing.`;
-      metaBar.textContent   = "Failed to load data.";
-      console.error(err);
+  .filter-grid { 
+    /* Force 2 columns and override the date picker's stubborn width */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
+    gap: 10px 8px; 
     }
   }
-
-  init();
-
-})();
-</script>
-</body>
+        </style>
+    </head>
+    <body>
+        <a href="#results" class="skip-link">Skip to results</a>
+        <div id="header">
+            <div id="header-left">
+                <h1>&#x1F4DA; TPL Events Finder</h1>
+                <div class="subtitle">Toronto Public Library &mdash; Branch Programs &amp; Events</div>
+            </div>
+            <div id="header-right">
+                <a class="gh-badge"
+                   href="https://github.com/jentacularjava/tpl_events"
+                   target="_blank"
+                   rel="noopener"
+                   aria-label="View source on GitHub">
+                    <!-- GitHub mark SVG (MIT licensed, github.com/logos) -->
+                    <svg width="14"
+                         height="14"
+                         viewBox="0 0 16 16"
+                         fill="currentColor"
+                         aria-hidden="true"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13 -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66 .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15 -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27 .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12 .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div id="meta-bar" aria-live="polite">Loading data&hellip;</div>
+        <div id="main">
+            <div id="filter-panel"
+                 class="raised"
+                 role="search"
+                 aria-label="Event filters">
+                <h2>Filter Events</h2>
+                <div class="filter-grid">
+                    <div class="filter-pair">
+                        <div class="filter-group">
+                            <label for="date-from">Date from</label>
+                            <input type="date" id="date-from" aria-label="Date from">
+                        </div>
+                        <div class="filter-group">
+                            <label for="time-from">Start time from</label>
+                            <select id="time-from" aria-label="Start time from">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-pair">
+                        <div class="filter-group">
+                            <label for="date-to">Date to</label>
+                            <input type="date" id="date-to" aria-label="Date to">
+                        </div>
+                        <div class="filter-group">
+                            <label for="time-to">Start time to</label>
+                            <select id="time-to" aria-label="Start time to">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Library</label>
+                        <div class="checkbox-list"
+                             id="library-list"
+                             role="group"
+                             aria-label="Library filters"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Audience</label>
+                        <div class="checkbox-list"
+                             id="audience-list"
+                             role="group"
+                             aria-label="Audience filters"></div>
+                    </div>
+                </div>
+                <div id="filter-actions">
+                    <button class="btn" id="clear-btn" type="button">Clear All Filters</button>
+                    <span id="result-count" aria-live="polite"></span>
+                </div>
+            </div>
+            <hr class="classic">
+            <div id="table-wrapper">
+                <div id="status-msg">Loading events&hellip;</div>
+                <table id="events-table" style="display:none" aria-label="Library events">
+                    <thead>
+                        <tr>
+                            <th data-col="title"    tabindex="0">
+                                Title <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                            </th>
+                            <th data-col="date"     tabindex="0" class="sorted">
+                                Date <span class="sort-arrow">&#x25B2;</span>
+                            </th>
+                            <th data-col="startTime" tabindex="0">
+                                Start <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                            </th>
+                            <th data-col="endTime"  tabindex="0">
+                                End <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                            </th>
+                            <th data-col="location" tabindex="0">
+                                Library <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                            </th>
+                            <th>Audience</th>
+                            <th>Event Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                    </tbody>
+                </table>
+            </div>
+            <div id="pagination" style="display:none" aria-label="Pagination">
+                <button class="btn" id="prev-btn" type="button" disabled>&laquo; Prev</button>
+                <span id="page-info"></span>
+                <button class="btn" id="next-btn" type="button">Next &raquo;</button>
+            </div>
+            <div id="footer">
+                Data: <a href="https://open.toronto.ca/dataset/library-branch-programs-and-events-feed/"
+    target="_blank"
+    rel="noopener">Toronto Open Data &mdash; TPL Branch Programs &amp; Events</a>
+                &nbsp;&middot;&nbsp;
+                <a href="https://github.com/jentacularjava/tpl_events"
+                   target="_blank"
+                   rel="noopener">Source on GitHub</a>
+                &nbsp;&middot;&nbsp;
+                <a href="humans.txt">humans.txt</a>
+                &nbsp;&middot;&nbsp;
+                Not affiliated with Toronto Public Library.
+            </div>
+        </div>
+        <!-- Easter egg modal (Konami code: up up down down left right left right b a) -->
+        <div id="easter-egg-overlay"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="easter-egg-title">
+            <div id="easter-egg-box">
+                <div id="easter-egg-titlebar">
+                    <div id="easter-egg-titlebar-title">
+                        <span>&#x1F4DA;</span>
+                        <span id="easter-egg-title">About TPL Events Finder</span>
+                    </div>
+                    <button id="easter-egg-close" aria-label="Close" type="button">&#x2715;</button>
+                </div>
+                <div id="easter-egg-body">
+                    <p>You found it. Nice. Nerd!!!</p>
+                    <p>I'm so happy you're here.</p>
+                    <p>
+                        Built by <a href="https://github.com/jentacularjava"
+    target="_blank"
+    rel="noopener">Jen</a>
+                        in Toronto, because the TPL event search deserved better UX.
+                    </p>
+                    <p style="font-family: var(--font-body);
+                              font-size: 11px;
+                              color: var(--dgrey)">
+                        &#x2191;&#x2191;&#x2193;&#x2193;&#x2190;&#x2192;&#x2190;&#x2192; B A
+                    </p>
+                </div>
+            </div>
+        </div>
+        <script src="js/script.js" defer></script>
+    </body>
 </html>
